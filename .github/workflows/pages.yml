@@ -1,8 +1,6 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+name: Build and Deploy
 
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ['master']
 
@@ -21,12 +19,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -50,6 +45,12 @@ jobs:
           CYPRESS_LOGIN_USERNAME: ${{ secrets.LOGIN_USERNAME }}
           CYPRESS_LOGIN_PASSWORD: ${{ secrets.LOGIN_PASSWORD }}
 
+
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v1
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git checkout gh-pages  # Or the branch where your GitHub Pages site is hosted
+          git merge main --no-commit --no-ff
+          git commit -m "Auto-deployed changes"
+          git push
